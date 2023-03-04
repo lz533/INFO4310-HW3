@@ -42,33 +42,40 @@
     // TODO: Load and process datasets
     const zillow = await d3.csv('./zillow_pittsburgh.csv')
     const yelp = await d3.csv('./yelp_pittsburgh_restaurants.csv')
-    
+
     const pittsburgh = await d3.json('./pittsburgh.json')
     console.log(pittsburgh)
 
-    let projection = d3.geoEquirectangular().fitSize([mainWidth, mainHeight]);
-    let geoGenerator = d3.geoPath().projection(projection);
+    let projection = d3.geoMercator().scale(600);
+    let pathGenerator = d3.geoPath(projection)
+    viewport.append('rect')
+      .attr('width', mainWidth)
+      .attr('height', mainHeight)
+      .attr('fill', '#eee')
 
     viewport.selectAll('path')
-            .data(pittsburgh.features)
-            .join('path')
-            .attr('d', geoGenerator);
-    
+      .data(pittsburgh.features)
+      .join('path')
+      .attr('d', pathGenerator)
+      .attr('fill', '#000')
+      .attr('stroke', '#000')
+      .attr('stroke-width', 1)
+
 
     // TODO: display nearby yelp data when a home is clicked, maybe zoom in?
-    function selectHome(){
-  
+    function selectHome() {
+
     }
     // TODO: clear map when clicking elsewhere
-    function leaveHome(){
-      
+    function leaveHome() {
+
     }
 
     // TODO: update map 
-    function updateMap(){
+    function updateMap() {
 
     }
-    
+
   }
   render();
 </script>

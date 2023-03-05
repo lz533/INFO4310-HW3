@@ -72,6 +72,12 @@
       .attr("stroke-width", 1);
 
     // Additional variables
+    let zillowPriceExtent = d3.extent(zillow, d => Number(d['Sale Amount']))
+    let logScale = d3.scaleLog().domain(zillowPriceExtent)
+    // let zillowScale = d3.scaleSequential(zillowPriceExtent, d3.interpolateViridis)
+    let zillowScale = d3.scaleSequential(d => d3.interpolateViridis(logScale(d)))
+
+
     let yelpScale = d3.scaleSequential([1, 5], d3.interpolateRdYlGn)
 
     // Plot zillow and yelp data
@@ -83,17 +89,18 @@
       .attr("cx", (d) => d.Position[0])
       .attr("cy", (d) => d.Position[1])
       .attr("r", 4)
-      .attr("fill", "#00f")
+      .attr("fill", d => zillowScale(d['Sale Amount']))
       .attr("stroke-width", 1);
 
     let circlesYelp = viewport
-      .selectAll("circle.yelp")
+      .selectAll("rect.yelp")
       .data(yelp)
-      .join("circle")
+      .join("rect")
       .attr("class", "yelp")
-      .attr("cx", (d) => d.Position[0])
-      .attr("cy", (d) => d.Position[1])
-      .attr("r", 4)
+      .attr("x", (d) => d.Position[0] - 3)
+      .attr("y", (d) => d.Position[1] - 3)
+      .attr("width", 6)
+      .attr("height", 6)
       .attr("fill", d => yelpScale(d.rating))
       .attr("visibility", "hidden");
 
@@ -135,7 +142,15 @@
     function selectHome(d) {
       xval = d.cx.baseVal.value;
       yval = d.cy.baseVal.value;
+
       circlesZillow.attr("visibility", "hidden")
+      viewport.append('image')
+        .attr('id', 'pointer')
+        .attr('x', xval - 8)
+        .attr('y', yval - 16)
+        .attr('width', 16)
+        .attr('height', 16)
+        .attr('href', './assets/mapCursor2.svg')
       d3.select(d).attr("visibility", "visible")
       viewport
         .transition()
@@ -152,15 +167,14 @@
 
       setTimeout(() => { circlesYelp.attr("visibility", "visible") }, 600)
 
-
-
-
-
     }
 
     // Clear map and zoom out when clicking elsewhere
     function leaveHome() {
+
       circlesYelp.attr("visibility", "hidden");
+      viewport.select('#pointer').remove()
+      circlesZillow.attr("visibility", "visible")
       viewport
         .transition()
         .duration(500)
@@ -168,7 +182,6 @@
           zoom.transform,
           d3.zoomIdentity
         )
-      setTimeout(() => { circlesZillow.attr("visibility", "visible") }, 600)
 
     }
   };

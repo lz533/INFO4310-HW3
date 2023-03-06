@@ -12,7 +12,12 @@
   <style>
     body {
       font: "Arima+Madurai";
-      /* background-image: url("food.jpeg"); */
+      /* background-image: url("./assets/food.jpeg"); */
+    }
+    .filter-title {
+      font-size: 16pt;
+      text-anchor: middle;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -27,7 +32,8 @@
   <div style="text-align: center">
     <p style="margin-bottom: 50; text-align: left"></p>
 
-    <svg id="main" height="750" width="1200" style="margin-bottom: 50; border: 1px solid black; background: #eee"></svg>
+    <svg id="main" height="750" width="900" style="margin-bottom: 50; border: 1px solid black; background: #eee"></svg>
+    <svg id="filters" height="750" width="300" style="margin-bottom: 50; border: 1px solid black; background: #eee"></svg>
   </div>
 </body>
 
@@ -92,7 +98,7 @@
       .attr("fill", d => zillowScale(d['Sale Amount']))
       .attr("stroke-width", 1);
 
-    let circlesYelp = viewport
+    let squaresYelp = viewport
       .selectAll("rect.yelp")
       .data(yelp)
       .join("rect")
@@ -150,7 +156,7 @@
         .attr('y', yval - 16)
         .attr('width', 16)
         .attr('height', 16)
-        .attr('href', './assets/mapCursor2.svg')
+        .attr('href', './assets/mapCursor.svg')
       d3.select(d).attr("visibility", "visible")
       viewport
         .transition()
@@ -160,19 +166,18 @@
           d3.zoomIdentity
             // .scale(2)
             // .translate(-xval + mainWidth / 4, -yval + mainHeight / 4)
-
             .scale(4)
             .translate(-xval + mainWidth / 8, -yval + mainHeight / 8)
         )
 
-      setTimeout(() => { circlesYelp.attr("visibility", "visible") }, 600)
+      setTimeout(() => { squaresYelp.attr("visibility", "visible") }, 600)
 
     }
 
     // Clear map and zoom out when clicking elsewhere
     function leaveHome() {
 
-      circlesYelp.attr("visibility", "hidden");
+      squaresYelp.attr("visibility", "hidden");
       viewport.select('#pointer').remove()
       circlesZillow.attr("visibility", "visible")
       viewport
@@ -182,8 +187,23 @@
           zoom.transform,
           d3.zoomIdentity
         )
-
     }
+
+    // Set up filter box
+    const filters = d3.select("#filters");
+    const filterWidth = filters.attr("width");
+    const filterHeight = filters.attr("height");
+
+    filters.append("text")
+          .attr("class", "filter-title")
+          .text("Filter Housing Listings")
+          .attr("transform", `translate(${filterWidth / 2},${50})`);
+    filters.append("foreignObject")
+        .attr("transform", `translate(${filterWidth/4},${100})`)
+        .attr("width", filterWidth/2)
+        .attr("height", 100)
+        .append("xhtml:input")
+        .type("number")
   };
   render();
 </script>

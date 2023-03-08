@@ -54,7 +54,7 @@
       .attr("transform", `translate(${mainMargin.l},${mainMargin.t})`);
 
     // Load and process datasets
-    const zillow = await d3.csv("./zillow_pittsburgh.csv");
+    const zillow = await d3.csv("./zillow_pittsburgh_filtered.csv");
     const yelp = await d3.csv("./yelp_pittsburgh_restaurants.csv");
 
     console.log(zillow)

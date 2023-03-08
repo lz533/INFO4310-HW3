@@ -33,9 +33,9 @@
   <div style="text-align: center">
     <p style="margin-bottom: 50; text-align: left"></p>
 
-    <svg id="main" height="750" width="900" style="margin-bottom: 50; border: 1px solid black; background: #eee"></svg>
+    <svg id="main" height="750" width="900" style="margin-bottom: 50; border: 1px solid black; background: #fff"></svg>
     <svg id="filters" height="750" width="300"
-      style="margin-bottom: 50; border: 1px solid black; background: #eee"></svg>
+      style="margin-bottom: 50; border: 1px solid black; background: #fff"></svg>
   </div>
 </body>
 
@@ -74,7 +74,7 @@
       .data(pittsburgh.features)
       .join("path")
       .attr("d", pathGenerator)
-      .attr("fill", "#eee")
+      .attr("fill", "#fff")
       .attr("stroke", "#000")
       .attr("stroke-width", 1);
 
@@ -205,114 +205,134 @@
         )
     }
 
-    // Yelp mouseover function
-    menu = viewport.append("rect")
-      .attr("class", "menu")
-      .attr("width", 100)
-      .attr("height", 50)
-      .style("fill", "#eee")
-      .style("opacity", 0)
-      .style("stroke", "black")
-      .style("stroke-width", "1px")
-      .attr("x", 10)
-      .attr("y", 10);
+    // // Yelp mouseover function
+    // menu = viewport.append("rect")
+    //   .attr("class", "menu")
+    //   .attr("width", 100)
+    //   .attr("height", 50)
+    //   .style("fill", "#fff")
+    //   .style("opacity", 1)
+    //   .style("stroke", "black")
+    //   .style("stroke-width", "1px")
+    //   .attr("x", 10)
+    //   .attr("y", 10);
 
-    menuText = viewport.append("text")
-      .attr("class", "menuText")
-      .attr('x', 10)
-      .attr('y', 10)
-      .text("Important Text")
-      .style("font-size", "6px")
-      .style("opacity", 0);
+    // menuText = viewport.append("text")
+    //   .attr("class", "menuText")
+    //   .attr('x', 10)
+    //   .attr('y', 10)
+    //   .text("Important Text")
+    //   .style("font-size", "6px")
+    //   .style("opacity", 0);
 
-    menuText2 = viewport.append("text")
-      .attr("class", "menuText2")
-      .attr('x', 10)
-      .attr('y', 10)
-      .text("Important Text")
-      .style("font-size", "6px")
-      .style("opacity", 0);
+    // menuText2 = viewport.append("text")
+    //   .attr("class", "menuText2")
+    //   .attr('x', 10)
+    //   .attr('y', 10)
+    //   .text("Important Text")
+    //   .style("font-size", "6px")
+    //   .style("opacity", 0);
 
-    menuText3 = viewport.append("text")
-      .attr("class", "menuText3")
-      .attr('x', 10)
-      .attr('y', 10)
-      .text("Important Text")
-      .style("font-size", "6px")
-      .style("opacity", 0);
-    
+    // menuText3 = viewport.append("text")
+    //   .attr("class", "menuText3")
+    //   .attr('x', 10)
+    //   .attr('y', 10)
+    //   .text("Important Text")
+    //   .style("font-size", "6px")
+    //   .style("opacity", 0);
+
     squaresYelp.on("mouseover", function (event, d) {
       d3.select(this).attr("stroke", "black").attr('stroke-width', 2);
       updateMenu(this);
     });
 
     squaresYelp.on("mouseout", function (event, d) {
+      d3.select('#menu-canvas').remove()
       d3.select(this).attr("stroke", "");
-      menu.style("opacity", 0);
-      menuText.style("opacity", 0);
-      menuText2.style("opacity", 0);
-      menuText3.style("opacity", 0);
-      d3.selectAll(".temp-image").remove();
+      // menu.style("opacity", 0);
+      // menuText.style("opacity", 0);
+      // menuText2.style("opacity", 0);
+      // menuText3.style("opacity", 0);
+      // d3.selectAll(".temp-image").remove();
     });
 
+    // Yelp mouseover function
     function updateMenu(id) {
-      console.log(yelp[id.id]);
-
       menuX = id.x.baseVal.value - 20;
       menuY = id.y.baseVal.value + 10;
-
       if ((menuY - currhouseY) > 45) {
         menuY = menuY - 65;
       };
 
-      menu.attr('x', menuX)
-        .attr('y', menuY);
+      let menuCanvas = viewport.append('g')
+        .attr('id', 'menu-canvas')
+        .attr('transform', `translate(${menuX},${menuY})`)
 
-      menuText.attr('x', menuX + 5)
-        .attr('y', menuY + 7);
+      menuCanvas.append("rect")
+        .attr("width", 120)
+        .attr("height", 50)
+        .style("fill", "#fff")
+        .style("stroke", "orange")
+        .style("stroke-width", 2)
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr('rx', 5)
 
-      menuText2.attr('x', menuX + 39)
-        .attr('y', menuY + 20);
 
-      menuText3.attr('x', menuX + 39)
-        .attr('y', menuY + 27);
+      menuCanvas.append("text")
+        .attr("class", "menuText")
+        .attr('x', 5)
+        .attr('y', 7)
+        .text(yelp[id.id].name)
+        .style("font-size", "6px")
 
-      viewport.append("svg:image")
+      menuCanvas.append("text")
+        .attr("class", "menuText2")
+        .attr('x', 39)
+        .attr('y', 20)
+        .text(yelp[id.id].rating + "/5 Stars")
+        .style("font-size", "6px")
+
+      menuCanvas.append("text")
+        .attr("class", "menuText3")
+        .attr('x', 39)
+        .attr('y', 27)
+        .text("Number of Ratings: " + yelp[id.id]["review count"])
+        .style("font-size", "6px")
+
+      menuCanvas.append("svg:image")
         .attr("class", "temp-image")
         .attr("xlink:href", yelp[id.id].image_url)
         .attr("width", 30)
         .attr("height", 30)
-        .attr('x', menuX + 5)
-        .attr('y', menuY + 13);
+        .attr('x', 5)
+        .attr('y', 13);
 
-      menuText.text(yelp[id.id].name);
-      menuText2.text(yelp[id.id].rating + "/5 Stars");
-      menuText3.text("Number of Ratings: " + yelp[id.id]["review count"]);
-
-      menuText.style('opacity', 1);
-      menuText2.style('opacity', 1);
-      menuText3.style('opacity', 1);
-      menu.style('opacity', 1);
     };
 
     // // Set up filter box
     const filters = d3.select("#filters");
-    // const filterWidth = filters.attr("width");
-    // const filterHeight = filters.attr("height");
+    const filterWidth = filters.attr("width");
+    const filterHeight = filters.attr("height");
 
-    // filters.append("text")
-    //   .attr("class", "filter-title")
-    //   .text("Filter Housing Listings")
-    //   .attr("transform", `translate(${filterWidth / 2},${50})`);
+    filters.append("text")
+      .attr("class", "filter-title")
+      .text("Filter Home Listings")
+      .attr("transform", `translate(${filterWidth / 2},${50})`);
 
     // // generate pairs of input boxes for filters
     // function generateFilter() {
-    //   filters.append("foreignObject")
-    //     .attr("transform", `translate(${filterWidth / 4},${100})`)
-    //     .attr("width", filterWidth / 2)
-    //     .attr("height", 100)
-    //     .append("xhtml:input")
-    //     .type("number")
+
+    // let testInput = filters.foreignObject(100, 100).attr({ id: 'fobj' })
+
+
+    // let testInput = filters.append("foreignObject")
+    //   .attr('id', 'test_input')
+    //   .attr("transform", `translate(${filterWidth / 4},${100})`)
+    //   .attr("width", filterWidth / 2)
+    //   .attr("height", 100)
+    // testInput.append("xhtml:input")
+    //   .type("number")
     // }
 
     // generateFilter("Minimum Price: ", "Sale Price", 280, 30);
@@ -321,9 +341,10 @@
     // generateFilter("Bathrooms: ", "Bathrooms", 280, 30);
 
     // filters.append("foreignObject")
-    //   .attr("transform", `translate(${filterWidth / 4},${100})`)
-    //   .attr("width", filterWidth / 2)
-    //   .attr("height", 100)
+    //   .attr('x', 100)
+    //   .attr('y', 100)
+    //   .attr("width", 100)
+    //   .attr("height", 30)
     //   .append("xhtml:button")
     //   .type("submit")
 
@@ -332,122 +353,14 @@
 
     // }
 
-    // // Citation: Credit Prof. Rz from INFO 3300 lecture notes Oct 03. 2022
-    // function drawLegend(legendSelector, legendColorScale) {
 
-    //   const offsets = {
-    //     width: 10,
-    //     top: 2,
-    //     bottom: 24
-    //   };
-    //   const stepSize = 4;
-    //   const minMaxExtendPercent = 0;
-
-    //   const legend = d3.select(legendSelector);
-
-    //   legend.selectAll('*').remove();
-
-    //   const legendHeight = legend.attr("height");
-    //   const legendBarWidth = legend.attr("width") - (offsets.width * 2);
-    //   const legendMinMax = d3.extent(legendColorScale.domain());
-
-    //   const minMaxExtension = (legendMinMax[1] - legendMinMax[0]) * minMaxExtendPercent;
-    //   const barHeight = legendHeight - offsets.top - offsets.bottom;
-
-    //   let barScale = d3.scaleLinear().domain([legendMinMax[0] - minMaxExtension,
-    //   legendMinMax[1] + minMaxExtension])
-    //     .range([0, legendBarWidth]);
-    //   let barAxis = d3.axisBottom(barScale);
-
-    //   let bar = legend.append("g")
-    //     .attr("class", "legend colorbar")
-    //     .attr("transform", `translate(${offsets.width},${offsets.top})`)
-
-    //   if (legendColorScale.hasOwnProperty('thresholds') || legendColorScale.hasOwnProperty('quantiles')) {
-    //     let thresholds = [];
-    //     if (legendColorScale.hasOwnProperty('thresholds')) { thresholds = legendColorScale.thresholds() }
-    //     else { thresholds = legendColorScale.quantiles() }
-
-    //     const barThresholds = [legendMinMax[0], ...thresholds, legendMinMax[1]];
-
-    //     barAxis.tickValues(barThresholds);
-
-    //     for (let i = 0; i < barThresholds.length - 1; i++) {
-    //       let dataStart = barThresholds[i];
-    //       let dataEnd = barThresholds[i + 1];
-    //       let pixelStart = barAxis.scale()(dataStart);
-    //       let pixelEnd = barAxis.scale()(dataEnd);
-
-    //       bar.append("rect")
-    //         .attr("x", pixelStart)
-    //         .attr("y", 0)
-    //         .attr("width", pixelEnd - pixelStart)
-    //         .attr("height", barHeight)
-    //         .style("fill", legendColorScale((dataStart + dataEnd) / 2.0));
-    //     }
-    //   }
-    //   else if (legendColorScale.hasOwnProperty('rangeRound')) {
-    //     for (let i = 0; i < legendBarWidth; i = i + stepSize) {
-
-    //       let center = i + (stepSize / 2);
-    //       let dataCenter = barAxis.scale().invert(center);
-
-    //       if (dataCenter < legendMinMax[0]) {
-    //         bar.append("rect")
-    //           .attr("x", i)
-    //           .attr("y", 0)
-    //           .attr("width", stepSize)
-    //           .attr("height", barHeight)
-    //           .style("fill", legendColorScale(legendMinMax[0]));
-    //       }
-    //       else if (dataCenter < legendMinMax[1]) {
-    //         bar.append("rect")
-    //           .attr("x", i)
-    //           .attr("y", 0)
-    //           .attr("width", stepSize)
-    //           .attr("height", barHeight)
-    //           .style("fill", legendColorScale(dataCenter));
-    //       }
-    //       else {
-    //         bar.append("rect")
-    //           .attr("x", i)
-    //           .attr("y", 0)
-    //           .attr("width", stepSize)
-    //           .attr("height", barHeight)
-    //           .style("fill", legendColorScale(legendMinMax[1]));
-    //       }
-    //     }
-    //   }
-    //   else {
-    //     let nomVals = legendColorScale.domain().sort();
-
-    //     let barScale = d3.scaleBand().domain(nomVals)
-    //       .range([0, legendBarWidth])
-    //       .padding(0.05);
-    //     barAxis.scale(barScale);
-
-    //     nomVals.forEach(d => {
-    //       bar.append("rect")
-    //         .attr("x", barScale(d))
-    //         .attr("y", 0)
-    //         .attr("width", barScale.bandwidth())
-    //         .attr("height", barHeight)
-    //         .style("fill", legendColorScale(d));
-    //     });
-    //   }
-    //   legend.append("g")
-    //     .attr("class", "legend axis")
-    //     .attr("transform", `translate(${offsets.width},${offsets.top + barHeight + 5})`)
-    //     .call(barAxis);
-
-    // };
 
     // House mouseover and click functions
     housemenu = filters.append("rect")
       .attr("class", "housemenu")
       .attr("width", 300)
       .attr("height", 350)
-      .style("fill", "#eee")
+      .style("fill", "#fff")
       .style("opacity", 0)
       .style("stroke", "black")
       .style("stroke-width", "1px")
@@ -470,7 +383,7 @@
       .style("font-size", "15px")
       .style("opacity", 0);
 
-    
+
     function updateMenu2(id) {
       housemenuText.text(zillow[id.id]['Street Address']);
       housemenuText2.text("$" + zillow[id.id]['Sale Amount']);
@@ -479,7 +392,115 @@
       housemenuText2.style('opacity', 1);
       housemenu.style('opacity', 1);
     };
+    // Citation: Credit Prof. Rz from INFO 3300 lecture notes Oct 03. 2022
+    function drawLegend(legendSelector, legendColorScale) {
 
+      const offsets = {
+        width: 10,
+        top: 2,
+        bottom: 24
+      };
+      const stepSize = 4;
+      const minMaxExtendPercent = 0;
+
+      const legend = d3.select(legendSelector);
+
+      legend.selectAll('*').remove();
+
+      const legendHeight = legend.attr("height");
+      const legendBarWidth = legend.attr("width") - (offsets.width * 2);
+      const legendMinMax = d3.extent(legendColorScale.domain());
+
+      const minMaxExtension = (legendMinMax[1] - legendMinMax[0]) * minMaxExtendPercent;
+      const barHeight = legendHeight - offsets.top - offsets.bottom;
+
+      let barScale = d3.scaleLinear().domain([legendMinMax[0] - minMaxExtension,
+      legendMinMax[1] + minMaxExtension])
+        .range([0, legendBarWidth]);
+      let barAxis = d3.axisBottom(barScale);
+
+      let bar = legend.append("g")
+        .attr("class", "legend colorbar")
+        .attr("transform", `translate(${offsets.width},${offsets.top})`)
+
+      if (legendColorScale.hasOwnProperty('thresholds') || legendColorScale.hasOwnProperty('quantiles')) {
+        let thresholds = [];
+        if (legendColorScale.hasOwnProperty('thresholds')) { thresholds = legendColorScale.thresholds() }
+        else { thresholds = legendColorScale.quantiles() }
+
+        const barThresholds = [legendMinMax[0], ...thresholds, legendMinMax[1]];
+
+        barAxis.tickValues(barThresholds);
+
+        for (let i = 0; i < barThresholds.length - 1; i++) {
+          let dataStart = barThresholds[i];
+          let dataEnd = barThresholds[i + 1];
+          let pixelStart = barAxis.scale()(dataStart);
+          let pixelEnd = barAxis.scale()(dataEnd);
+
+          bar.append("rect")
+            .attr("x", pixelStart)
+            .attr("y", 0)
+            .attr("width", pixelEnd - pixelStart)
+            .attr("height", barHeight)
+            .style("fill", legendColorScale((dataStart + dataEnd) / 2.0));
+        }
+      }
+      else if (legendColorScale.hasOwnProperty('rangeRound')) {
+        for (let i = 0; i < legendBarWidth; i = i + stepSize) {
+
+          let center = i + (stepSize / 2);
+          let dataCenter = barAxis.scale().invert(center);
+
+          if (dataCenter < legendMinMax[0]) {
+            bar.append("rect")
+              .attr("x", i)
+              .attr("y", 0)
+              .attr("width", stepSize)
+              .attr("height", barHeight)
+              .style("fill", legendColorScale(legendMinMax[0]));
+          }
+          else if (dataCenter < legendMinMax[1]) {
+            bar.append("rect")
+              .attr("x", i)
+              .attr("y", 0)
+              .attr("width", stepSize)
+              .attr("height", barHeight)
+              .style("fill", legendColorScale(dataCenter));
+          }
+          else {
+            bar.append("rect")
+              .attr("x", i)
+              .attr("y", 0)
+              .attr("width", stepSize)
+              .attr("height", barHeight)
+              .style("fill", legendColorScale(legendMinMax[1]));
+          }
+        }
+      }
+      else {
+        let nomVals = legendColorScale.domain().sort();
+
+        let barScale = d3.scaleBand().domain(nomVals)
+          .range([0, legendBarWidth])
+          .padding(0.05);
+        barAxis.scale(barScale);
+
+        nomVals.forEach(d => {
+          bar.append("rect")
+            .attr("x", barScale(d))
+            .attr("y", 0)
+            .attr("width", barScale.bandwidth())
+            .attr("height", barHeight)
+            .style("fill", legendColorScale(d));
+        });
+      }
+      legend.append("g")
+        .attr("class", "legend axis")
+        .attr("transform", `translate(${offsets.width},${offsets.top + barHeight + 5})`)
+        .call(barAxis);
+
+    };
   };
   render();
 </script>

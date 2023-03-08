@@ -34,8 +34,11 @@
     <p style="margin-bottom: 50; text-align: left"></p>
 
     <svg id="main" height="750" width="900" style="margin-bottom: 50; border: 1px solid black; background: #fff"></svg>
-    <svg id="filters" height="750" width="300"
-      style="margin-bottom: 50; border: 1px solid black; background: #fff"></svg>
+    <svg id="filters" height="750" width="300" style="margin-bottom: 50; border: 1px solid black; background: #fff">
+      <foreignObject x="15" y="50" width="270" height="400">
+        <div id="filter-container"></div>
+      </foreignObject>
+    </svg>
   </div>
 </body>
 
@@ -54,7 +57,7 @@
     const zillow = await d3.csv("./zillow_pittsburgh.csv");
     const yelp = await d3.csv("./yelp_pittsburgh_restaurants.csv");
 
-
+    console.log(zillow)
     const pittsburgh = await d3.json("./pittsburgh.json");
 
     // Create pittsburgh map
@@ -89,12 +92,11 @@
     let currhouseY = 0;
 
     // Plot zillow and yelp data
-    i = -1;
     let circlesZillow = viewport
       .selectAll("circle.zillow")
       .data(zillow)
       .join("circle")
-      .attr("id", (d) => { i++; return i; })
+      .attr("id", (d) => zillow.indexOf(d))
       .attr("class", "zillow")
       .attr("cx", (d) => d.Position[0])
       .attr("cy", (d) => d.Position[1])
@@ -102,12 +104,11 @@
       .attr("fill", d => zillowScale(d['Sale Amount']))
       .attr("stroke-width", 1);
 
-    i = -1;
     let squaresYelp = viewport
       .selectAll("rect.yelp")
       .data(yelp)
       .join("rect")
-      .attr("id", (d) => { i++; return i; })
+      .attr("id", (d) => yelp.indexOf(d))
       .attr("class", "yelp")
       .attr("x", (d) => d.Position[0] - 2)
       .attr("y", (d) => d.Position[1] - 2)
@@ -116,9 +117,12 @@
       .attr("fill", d => yelpScale(d.rating))
       .attr("visibility", "hidden");
 
-    // Zillow mouseover and click functions
     var onCircle = false;
     var clickedCircle = false;
+    var onRect = false
+
+    // Zillow mouseover and click functions
+
     circlesZillow.on("mouseover", function (event, d) {
       d3.select(this).attr("stroke", "black").attr('stroke-width', 2);
       onCircle = true;
@@ -140,7 +144,7 @@
     });
 
     main.on("click", function (event, d) {
-      if (clickedCircle && !onCircle) {
+      if (clickedCircle && !onCircle && !onRect) {
         leaveHome(this);
         clickedCircle = false;
         housemenu.style("opacity", 0);
@@ -205,55 +209,16 @@
         )
     }
 
-    // // Yelp mouseover function
-    // menu = viewport.append("rect")
-    //   .attr("class", "menu")
-    //   .attr("width", 100)
-    //   .attr("height", 50)
-    //   .style("fill", "#fff")
-    //   .style("opacity", 1)
-    //   .style("stroke", "black")
-    //   .style("stroke-width", "1px")
-    //   .attr("x", 10)
-    //   .attr("y", 10);
-
-    // menuText = viewport.append("text")
-    //   .attr("class", "menuText")
-    //   .attr('x', 10)
-    //   .attr('y', 10)
-    //   .text("Important Text")
-    //   .style("font-size", "6px")
-    //   .style("opacity", 0);
-
-    // menuText2 = viewport.append("text")
-    //   .attr("class", "menuText2")
-    //   .attr('x', 10)
-    //   .attr('y', 10)
-    //   .text("Important Text")
-    //   .style("font-size", "6px")
-    //   .style("opacity", 0);
-
-    // menuText3 = viewport.append("text")
-    //   .attr("class", "menuText3")
-    //   .attr('x', 10)
-    //   .attr('y', 10)
-    //   .text("Important Text")
-    //   .style("font-size", "6px")
-    //   .style("opacity", 0);
-
     squaresYelp.on("mouseover", function (event, d) {
       d3.select(this).attr("stroke", "black").attr('stroke-width', 2);
       updateMenu(this);
+      onRect = true
     });
 
     squaresYelp.on("mouseout", function (event, d) {
       d3.select('#menu-canvas').remove()
       d3.select(this).attr("stroke", "");
-      // menu.style("opacity", 0);
-      // menuText.style("opacity", 0);
-      // menuText2.style("opacity", 0);
-      // menuText3.style("opacity", 0);
-      // d3.selectAll(".temp-image").remove();
+      onRect = false
     });
 
     // Yelp mouseover function
@@ -310,49 +275,141 @@
 
     };
 
-    // // Set up filter box
+    let rentExtent = d3.extent(zillow, d => Number(d['Rent Amount']))
+    let bedroomExtent = d3.extent(zillow, d => Number(d['Bedrooms']))
+    let bathroomExtent = d3.extent(zillow, d => Number(d['Bathroom']))
     const filters = d3.select("#filters");
     const filterWidth = filters.attr("width");
     const filterHeight = filters.attr("height");
+    const filterDiv = d3.select("#filter-container").attr('align', 'left');
+
 
     filters.append("text")
       .attr("class", "filter-title")
       .text("Filter Home Listings")
-      .attr("transform", `translate(${filterWidth / 2},${50})`);
+      .attr("transform", `translate(${filterWidth / 2},${30})`);
+    let priceInput = filterDiv.append('div')
+    priceInput.append('p').text('Sale Price')
+      .style('margin', '5 0 5 0')
+    // inputDiv.append('input').attr('type', 'range')
+    priceInput.append('input')
+      .attr('class', 'filter-input')
+      .attr('id', 'price' + '-min')
+      .attr('type', 'number')
+      .attr('min', zillowPriceExtent[0])
+      .attr('max', zillowPriceExtent[1])
+      .attr('placeholder', 'Min')
+      .style('width', 90)
+    priceInput.append('span').text(' - ')
+    priceInput.append('input')
+      .attr('class', 'filter-input')
+      .attr('id', 'price' + '-max')
+      .attr('type', 'number')
+      .attr('min', zillowPriceExtent[0])
+      .attr('max', zillowPriceExtent[1])
+      .attr('placeholder', 'Max')
+      .style('width', 90)
 
-    // // generate pairs of input boxes for filters
-    // function generateFilter() {
+    let rentInput = filterDiv.append('div')
+    rentInput.append('p').text('Average Rent')
+      .style('margin', '5 0 5 0')
+    // inputDiv.append('input').attr('type', 'range')
+    rentInput.append('input')
+      .attr('class', 'filter-input')
+      .attr('id', 'rent' + '-min')
+      .attr('type', 'number')
+      .attr('min', rentExtent[0])
+      .attr('max', rentExtent[1])
+      .attr('placeholder', 'Min')
+      .style('width', 90)
+    rentInput.append('span').text(' - ')
+    rentInput.append('input')
+      .attr('class', 'filter-input')
+      .attr('id', 'rent' + '-max')
+      .attr('type', 'number')
+      .attr('min', rentExtent[0])
+      .attr('max', rentExtent[1])
+      .attr('placeholder', 'Max')
+      .style('width', 90)
 
-    // let testInput = filters.foreignObject(100, 100).attr({ id: 'fobj' })
+
+    let bedroomInput = filterDiv.append('div')
+    bedroomInput.append('p').text('Bedrooms')
+      .style('margin', '5 0 5 0')
+    let bedroomSelect = bedroomInput.append('select')
+      .attr('class', 'filter-input')
+      .attr('id', 'bedroom')
+      .style('width', 40)
+    bedroomSelect.append('option').attr('value', '').text(' ')
+    for (let i = bedroomExtent[0]; i < bedroomExtent[1] + 1; i++) {
+      bedroomSelect.append('option').attr('value', i).text(i)
+    }
+
+    let bathroomInput = filterDiv.append('div')
+    bathroomInput.append('p').text('Bathrooms')
+      .style('margin', '5 0 5 0')
+    let bathroomSelect = bathroomInput.append('select')
+      .attr('class', 'filter-input')
+      .attr('id', 'bathroom')
+      .style('width', 40)
+    bathroomSelect.append('option').attr('value', '').text(' ')
+    for (let i = bathroomExtent[0] * 2; i < bathroomExtent[1] * 2 + 1; i++) {// apparently, half-bathrooms exist
+      bathroomSelect.append('option').attr('value', i / 2).text(i / 2)
+    }
+    filterDiv.append('button')
+      .attr('id', 'submit')
+      .text('Filter')
+      .style('width', 75)
+      .style('background-color', '#fff')
+      .style('margin', '10 20 0 0')
+      .on("click", d => filter())
+
+    filterDiv.append('button')
+      .attr('id', 'clear')
+      .text('Clear')
+      .style('width', 75)
+      .style('background-color', '#fff')
+      .style('margin', '10 20 0 0')
+      .on("click", d => clear())
 
 
-    // let testInput = filters.append("foreignObject")
-    //   .attr('id', 'test_input')
-    //   .attr("transform", `translate(${filterWidth / 4},${100})`)
-    //   .attr("width", filterWidth / 2)
-    //   .attr("height", 100)
-    // testInput.append("xhtml:input")
-    //   .type("number")
-    // }
+    function filter() {
+      // Filter by minimum price, maximum price, bedrooms, and bathrooms
+      // pretty bad implementation
+      let minPrice = document.getElementById("price-min").value
+      let maxPrice = document.getElementById("price-max").value
+      let minRent = document.getElementById("rent-min").value
+      let maxRent = document.getElementById("rent-max").value
+      let numBedroom = document.getElementById("bedroom").value
+      let numBathroom = document.getElementById("bathroom").value
+      let filtered = zillow.filter(d => true)
+      if (minPrice) { filtered = filtered.filter(d => Number(d['Sale Amount']) >= minPrice) }
+      if (maxPrice) { filtered = filtered.filter(d => Number(d['Sale Amount']) <= maxPrice) }
+      if (minRent) { filtered = filtered.filter(d => Number(d['Rent Amount']) >= minRent) }
+      if (maxRent) { filtered = filtered.filter(d => Number(d['Rent Amount']) <= maxRent) }
+      if (numBedroom) { filtered = filtered.filter(d => d['Bedrooms'] === numBedroom) }
+      if (numBathroom) { filtered = filtered.filter(d => d['Bathroom'] === numBathroom) }
 
-    // generateFilter("Minimum Price: ", "Sale Price", 280, 30);
-    // generateFilter("Minimum Price: ", "Sale Price", 280, 30);
-    // generateFilter("Bedrooms: ", "Bedrooms", 280, 30);
-    // generateFilter("Bathrooms: ", "Bathrooms", 280, 30);
 
-    // filters.append("foreignObject")
-    //   .attr('x', 100)
-    //   .attr('y', 100)
-    //   .attr("width", 100)
-    //   .attr("height", 30)
-    //   .append("xhtml:button")
-    //   .type("submit")
-
-    // function filter() {
-    //   // Filter by minimum price, maximum price, bedrooms, and bathrooms
-
-    // }
-
+      viewport.selectAll("circle.zillow").remove()
+      circlesZillow = viewport.selectAll("circle.zillow").data(filtered).join("circle")
+        .attr("id", (d) => zillow.indexOf(d))
+        .attr("class", "zillow")
+        .attr("cx", (d) => d.Position[0])
+        .attr("cy", (d) => d.Position[1])
+        .attr("r", 4)
+        .attr("fill", d => zillowScale(d['Sale Amount']))
+        .attr("stroke-width", 1);
+    }
+    function clear() {
+      document.getElementById("price-min").value = ''
+      document.getElementById("price-max").value = ''
+      document.getElementById("rent-min").value = ''
+      document.getElementById("rent-max").value = ''
+      document.getElementById("bedroom").value = ''
+      document.getElementById("bathroom").value = ''
+      filter()
+    }
 
 
     // House mouseover and click functions
@@ -386,7 +443,7 @@
 
     function updateMenu2(id) {
       housemenuText.text(zillow[id.id]['Street Address']);
-      housemenuText2.text("$" + zillow[id.id]['Sale Amount']);
+      housemenuText2.text("Sale Amount: $" + zillow[id.id]['Sale Amount']);
 
       housemenuText.style('opacity', 1);
       housemenuText2.style('opacity', 1);

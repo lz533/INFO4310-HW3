@@ -131,7 +131,7 @@
     circlesZillow.on("mouseout", function (event, d) {
       d3.select(this).attr("stroke", "");
       onCircle = false;
-      if (!clickedCircle){
+      if (!clickedCircle) {
         resetMenu2();
       }
     });
@@ -164,6 +164,8 @@
     }
 
     function selectHome(d) {
+      document.getElementById("submit").disabled = true
+      document.getElementById("clear").disabled = true
       xval = d.cx.baseVal.value;
       yval = d.cy.baseVal.value;
 
@@ -198,14 +200,10 @@
     function leaveHome() {
       squaresYelp.attr("visibility", "hidden");
       viewport.select('#pointer').remove()
-      circlesZillow.attr("visibility", "visible")
-      viewport
-        .transition()
-        .duration(500)
-        .call(
-          zoom.transform,
-          d3.zoomIdentity
-        )
+      viewport.transition().duration(500).call(zoom.transform, d3.zoomIdentity)
+      setTimeout(() => { circlesZillow.attr("visibility", "visible") }, 600)
+      document.getElementById("submit").disabled = false
+      document.getElementById("clear").disabled = false
     }
 
     squaresYelp.on("mouseover", function (event, d) {
@@ -353,7 +351,7 @@
     for (let i = bathroomExtent[0] * 2; i < bathroomExtent[1] * 2 + 1; i++) {// apparently, half-bathrooms exist
       bathroomSelect.append('option').attr('value', i / 2).text(i / 2)
     }
-    filterDiv.append('button')
+    let btnSubmit = filterDiv.append('button')
       .attr('id', 'submit')
       .text('Filter')
       .style('width', 75)
@@ -361,14 +359,13 @@
       .style('margin', '10 20 0 0')
       .on("click", d => filter())
 
-    filterDiv.append('button')
+    let btnClear = filterDiv.append('button')
       .attr('id', 'clear')
       .text('Clear')
       .style('width', 75)
       .style('background-color', '#fff')
       .style('margin', '10 20 0 0')
       .on("click", d => clear())
-
 
     function filter() {
       // Filter by minimum price, maximum price, bedrooms, and bathrooms
@@ -433,7 +430,7 @@
       .style("font-size", "16px")
       .style("opacity", 0);
 
-    
+
     let housemenuText3 = filters.append("text")
       .attr("class", "housemenuText2")
       .attr('x', 10)
@@ -457,7 +454,7 @@
       .text("Important Text")
       .style("font-size", "16px")
       .style("opacity", 0);
-    
+
     function updateMenu2(id) {
       housemenuText.text(zillow[id.id]['Street Address']);
       housemenuText2.text("Sale Amount: $" + zillow[id.id]['Sale Amount']);
@@ -473,7 +470,7 @@
       housemenu.style('opacity', 1);
     };
 
-    function resetMenu2(){
+    function resetMenu2() {
       housemenu.style("opacity", 0);
       housemenuText.style("opacity", 0);
       housemenuText2.style("opacity", 0);

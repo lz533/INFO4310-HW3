@@ -386,8 +386,6 @@
       if (numBedroom) { filtered = filtered.filter(d => d['Bedrooms'] === numBedroom) }
       if (numBathroom) { filtered = filtered.filter(d => d['Bathroom'] === numBathroom) }
 
-
-      viewport.selectAll("circle.zillow").remove()
       circlesZillow = viewport.selectAll("circle.zillow").data(filtered).join("circle")
         .attr("id", (d) => zillow.indexOf(d))
         .attr("class", "zillow")

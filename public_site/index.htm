@@ -122,7 +122,6 @@
     var onRect = false
 
     // Zillow mouseover and click functions
-
     circlesZillow.on("mouseover", function (event, d) {
       d3.select(this).attr("stroke", "black").attr('stroke-width', 2);
       onCircle = true;
@@ -132,6 +131,9 @@
     circlesZillow.on("mouseout", function (event, d) {
       d3.select(this).attr("stroke", "");
       onCircle = false;
+      if (!clickedCircle){
+        resetMenu2();
+      }
     });
 
     circlesZillow.on("click", function (event, d) {
@@ -147,9 +149,7 @@
       if (clickedCircle && !onCircle && !onRect) {
         leaveHome(this);
         clickedCircle = false;
-        housemenu.style("opacity", 0);
-        housemenuText.style("opacity", 0);
-        housemenuText2.style("opacity", 0);
+        resetMenu2();
       }
     });
 
@@ -196,7 +196,6 @@
 
     // Clear map and zoom out when clicking elsewhere
     function leaveHome() {
-
       squaresYelp.attr("visibility", "hidden");
       viewport.select('#pointer').remove()
       circlesZillow.attr("visibility", "visible")
@@ -243,7 +242,6 @@
         .attr("y", 0)
         .attr('rx', 5)
 
-
       menuCanvas.append("text")
         .attr("class", "menuText")
         .attr('x', 5)
@@ -275,6 +273,7 @@
 
     };
 
+    // Filter tab
     let rentExtent = d3.extent(zillow, d => Number(d['Rent Amount']))
     let bedroomExtent = d3.extent(zillow, d => Number(d['Bedrooms']))
     let bathroomExtent = d3.extent(zillow, d => Number(d['Bathroom']))
@@ -282,7 +281,6 @@
     const filterWidth = filters.attr("width");
     const filterHeight = filters.attr("height");
     const filterDiv = d3.select("#filter-container").attr('align', 'left');
-
 
     filters.append("text")
       .attr("class", "filter-title")
@@ -332,7 +330,6 @@
       .attr('placeholder', 'Max')
       .style('width', 90)
 
-
     let bedroomInput = filterDiv.append('div')
     bedroomInput.append('p').text('Bedrooms')
       .style('margin', '5 0 5 0')
@@ -375,7 +372,6 @@
 
     function filter() {
       // Filter by minimum price, maximum price, bedrooms, and bathrooms
-      // pretty bad implementation
       let minPrice = document.getElementById("price-min").value
       let maxPrice = document.getElementById("price-max").value
       let minRent = document.getElementById("rent-min").value
@@ -411,9 +407,8 @@
       filter()
     }
 
-
     // House mouseover and click functions
-    housemenu = filters.append("rect")
+    let housemenu = filters.append("rect")
       .attr("class", "housemenu")
       .attr("width", 300)
       .attr("height", 350)
@@ -424,31 +419,71 @@
       .attr("x", 0)
       .attr("y", 400);
 
-    housemenuText = filters.append("text")
+    let housemenuText = filters.append("text")
       .attr("class", "housemenuText")
       .attr('x', 10)
-      .attr('y', 425)
+      .attr('y', 430)
       .text("Important Text")
       .style("font-size", "20px")
       .style("opacity", 0);
 
-    housemenuText2 = filters.append("text")
+    let housemenuText2 = filters.append("text")
       .attr("class", "housemenuText2")
       .attr('x', 10)
-      .attr('y', 450)
+      .attr('y', 460)
       .text("Important Text")
-      .style("font-size", "15px")
+      .style("font-size", "16px")
       .style("opacity", 0);
 
+    
+    let housemenuText3 = filters.append("text")
+      .attr("class", "housemenuText2")
+      .attr('x', 10)
+      .attr('y', 490)
+      .text("Important Text")
+      .style("font-size", "16px")
+      .style("opacity", 0);
 
+    let housemenuText4 = filters.append("text")
+      .attr("class", "housemenuText2")
+      .attr('x', 10)
+      .attr('y', 520)
+      .text("Important Text")
+      .style("font-size", "16px")
+      .style("opacity", 0);
+
+    let housemenuText5 = filters.append("text")
+      .attr("class", "housemenuText2")
+      .attr('x', 10)
+      .attr('y', 550)
+      .text("Important Text")
+      .style("font-size", "16px")
+      .style("opacity", 0);
+    
     function updateMenu2(id) {
       housemenuText.text(zillow[id.id]['Street Address']);
       housemenuText2.text("Sale Amount: $" + zillow[id.id]['Sale Amount']);
+      housemenuText3.text("Average Rent: $" + zillow[id.id]['Rent Amount']);
+      housemenuText4.text("Bedrooms: " + zillow[id.id]['Bedrooms']);
+      housemenuText5.text("Bathrooms: " + zillow[id.id]['Bathroom']);
 
       housemenuText.style('opacity', 1);
       housemenuText2.style('opacity', 1);
+      housemenuText3.style('opacity', 1);
+      housemenuText4.style('opacity', 1);
+      housemenuText5.style('opacity', 1);
       housemenu.style('opacity', 1);
     };
+
+    function resetMenu2(){
+      housemenu.style("opacity", 0);
+      housemenuText.style("opacity", 0);
+      housemenuText2.style("opacity", 0);
+      housemenuText3.style("opacity", 0);
+      housemenuText4.style("opacity", 0);
+      housemenuText5.style("opacity", 0);
+    }
+
     // Citation: Credit Prof. Rz from INFO 3300 lecture notes Oct 03. 2022
     function drawLegend(legendSelector, legendColorScale) {
 

@@ -12,7 +12,6 @@
   <style>
     body {
       font: "Arima+Madurai";
-      /* background-image: url("./assets/food.jpeg"); */
     }
 
     .filter-title {
@@ -86,8 +85,10 @@
     let logScale = d3.scaleLog().domain(zillowPriceExtent)
     // let zillowScale = d3.scaleSequential(zillowPriceExtent, d3.interpolateViridis)
     let zillowScale = d3.scaleSequential(d => d3.interpolateViridis(logScale(d)))
+    let zillowScale2 = d3.scaleSequential(d3.interpolateViridis).domain(zillowPriceExtent)
 
     let yelpScale = d3.scaleSequential([1, 5], d3.interpolateRdYlGn);
+    let yelpScale2 = d3.scaleSequential(d3.interpolateRdYlGn).domain([1, 5]);
 
     let currhouseY = 0;
 
@@ -131,7 +132,7 @@
     circlesZillow.on("mouseout", function (event, d) {
       d3.select(this).attr("stroke", "");
       onCircle = false;
-      if (!clickedCircle){
+      if (!clickedCircle) {
         resetMenu2();
       }
     });
@@ -139,6 +140,8 @@
     circlesZillow.on("click", function (event, d) {
       if (!clickedCircle) selectHome(this);
       clickedCircle = true;
+      d3.select('#zillowLegend').attr("opacity", 0)
+      d3.select('#yelpLegend').attr("opacity", 1)
       d3.select(this).attr("stroke", "");
       housemenu.style("opacity", 1);
       housemenuText.style("opacity", 1);
@@ -149,6 +152,8 @@
       if (clickedCircle && !onCircle && !onRect) {
         leaveHome(this);
         clickedCircle = false;
+        d3.select('#zillowLegend').attr("opacity", 1)
+        d3.select('#yelpLegend').attr("opacity", 0)
         resetMenu2();
       }
     });
@@ -164,6 +169,8 @@
     }
 
     function selectHome(d) {
+      document.getElementById("submit").disabled = true
+      document.getElementById("clear").disabled = true
       xval = d.cx.baseVal.value;
       yval = d.cy.baseVal.value;
 
@@ -198,14 +205,10 @@
     function leaveHome() {
       squaresYelp.attr("visibility", "hidden");
       viewport.select('#pointer').remove()
-      circlesZillow.attr("visibility", "visible")
-      viewport
-        .transition()
-        .duration(500)
-        .call(
-          zoom.transform,
-          d3.zoomIdentity
-        )
+      viewport.transition().duration(500).call(zoom.transform, d3.zoomIdentity)
+      setTimeout(() => { circlesZillow.attr("visibility", "visible") }, 600)
+      document.getElementById("submit").disabled = false
+      document.getElementById("clear").disabled = false
     }
 
     squaresYelp.on("mouseover", function (event, d) {
@@ -282,6 +285,78 @@
     const filterHeight = filters.attr("height");
     const filterDiv = d3.select("#filter-container").attr('align', 'left');
 
+    // Add colorscale legend
+    var zillowScaleLegend = filters.append('g').attr('id' , 'zillowLegend').attr('opacity' , 1)
+    const linearGradient = zillowScaleLegend.append("defs")
+                            .append("linearGradient")
+                            .attr("id", "linear-gradient");
+    linearGradient.selectAll("stop")
+                  .data(zillowScale2.ticks()
+                  .map((t, i, n) => ({ 
+                    offset: `${100*i/n.length}%`, 
+                    color: zillowScale2(t) })))
+                  .enter()
+                    .append("stop")
+                    .attr("offset", d => d.offset)
+                    .attr("stop-color", d => d.color);
+      zillowScaleLegend.append("rect")
+            .attr('transform', `translate(20,680)`)
+            .attr("width", 250)
+            .attr("height", 20)
+            .style("fill", "url(#linear-gradient)");
+    const colorAxis = d3.axisBottom(d3.scaleLinear()
+                        .domain(zillowScale2.domain())
+                        .range([0,250]))
+                        .ticks(5).tickSize(-20);
+    zillowScaleLegend.append('g').call(colorAxis)
+     .attr('class','colorLegend')
+     .attr('transform','translate(20,700)')
+     .selectAll('text')
+     .style('text-anchor','middle')
+     .attr('dy', '10px')
+
+    zillowScaleLegend.append('text')
+     .attr('x',120)
+     .attr('y',670)
+     .style('font-size','.9em')
+     .text('House Price');
+
+
+    var yelpScaleLegend = filters.append('g').attr('id' , 'yelpLegend').attr('opacity' , 0)
+    const linearGradient2 = yelpScaleLegend.append("defs")
+                            .append("linearGradient")
+                            .attr("id", "linear-gradient2");
+    linearGradient2.selectAll("stop")
+                  .data(yelpScale2.ticks()
+                  .map((t, i, n) => ({ 
+                    offset: `${100*i/n.length}%`, 
+                    color: yelpScale2(t) })))
+                  .enter()
+                    .append("stop")
+                    .attr("offset", d => d.offset)
+                    .attr("stop-color", d => d.color);
+      yelpScaleLegend.append("rect")
+            .attr('transform', `translate(20,680)`)
+            .attr("width", 250)
+            .attr("height", 20)
+            .style("fill", "url(#linear-gradient2)");
+    const colorAxis2 = d3.axisBottom(d3.scaleLinear()
+                        .domain(yelpScale2.domain())
+                        .range([0,250]))
+                        .ticks(5).tickSize(-20);
+    yelpScaleLegend.append('g').call(colorAxis2)
+     .attr('class','colorLegend')
+     .attr('transform','translate(20,700)')
+     .selectAll('text')
+     .style('text-anchor','middle')
+     .attr('dy', '10px')
+
+    yelpScaleLegend.append('text')
+     .attr('x',120)
+     .attr('y',670)
+     .style('font-size','.9em')
+     .text('Star Rating');
+
     filters.append("text")
       .attr("class", "filter-title")
       .text("Filter Home Listings")
@@ -353,7 +428,7 @@
     for (let i = bathroomExtent[0] * 2; i < bathroomExtent[1] * 2 + 1; i++) {// apparently, half-bathrooms exist
       bathroomSelect.append('option').attr('value', i / 2).text(i / 2)
     }
-    filterDiv.append('button')
+    let btnSubmit = filterDiv.append('button')
       .attr('id', 'submit')
       .text('Filter')
       .style('width', 75)
@@ -361,14 +436,13 @@
       .style('margin', '10 20 0 0')
       .on("click", d => filter())
 
-    filterDiv.append('button')
+    let btnClear = filterDiv.append('button')
       .attr('id', 'clear')
       .text('Clear')
       .style('width', 75)
       .style('background-color', '#fff')
       .style('margin', '10 20 0 0')
       .on("click", d => clear())
-
 
     function filter() {
       // Filter by minimum price, maximum price, bedrooms, and bathrooms
@@ -394,7 +468,33 @@
         .attr("r", 4)
         .attr("fill", d => zillowScale(d['Sale Amount']))
         .attr("stroke-width", 1);
+
+        circlesZillow.on("mouseover", function (event, d) {
+          d3.select(this).attr("stroke", "black").attr('stroke-width', 2);
+          onCircle = true;
+          updateMenu2(this);
+        });
+
+        circlesZillow.on("mouseout", function (event, d) {
+          d3.select(this).attr("stroke", "");
+          onCircle = false;
+          if (!clickedCircle) {
+            resetMenu2();
+          }
+        });
+
+        circlesZillow.on("click", function (event, d) {
+          if (!clickedCircle) selectHome(this);
+          clickedCircle = true;
+          d3.select('#zillowLegend').attr("opacity", 0)
+          d3.select('#yelpLegend').attr("opacity", 1)
+          d3.select(this).attr("stroke", "");
+          housemenu.style("opacity", 1);
+          housemenuText.style("opacity", 1);
+          housemenuText2.style("opacity", 1);
+        });
     }
+
     function clear() {
       document.getElementById("price-min").value = ''
       document.getElementById("price-max").value = ''
@@ -402,14 +502,14 @@
       document.getElementById("rent-max").value = ''
       document.getElementById("bedroom").value = ''
       document.getElementById("bathroom").value = ''
-      filter()
+      filter();
     }
 
     // House mouseover and click functions
     let housemenu = filters.append("rect")
       .attr("class", "housemenu")
       .attr("width", 300)
-      .attr("height", 350)
+      .attr("height", 250)
       .style("fill", "#fff")
       .style("opacity", 0)
       .style("stroke", "black")
@@ -433,7 +533,7 @@
       .style("font-size", "16px")
       .style("opacity", 0);
 
-    
+
     let housemenuText3 = filters.append("text")
       .attr("class", "housemenuText2")
       .attr('x', 10)
@@ -457,7 +557,7 @@
       .text("Important Text")
       .style("font-size", "16px")
       .style("opacity", 0);
-    
+
     function updateMenu2(id) {
       housemenuText.text(zillow[id.id]['Street Address']);
       housemenuText2.text("Sale Amount: $" + zillow[id.id]['Sale Amount']);
@@ -473,7 +573,7 @@
       housemenu.style('opacity', 1);
     };
 
-    function resetMenu2(){
+    function resetMenu2() {
       housemenu.style("opacity", 0);
       housemenuText.style("opacity", 0);
       housemenuText2.style("opacity", 0);
